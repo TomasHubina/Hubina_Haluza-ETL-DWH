@@ -3,6 +3,7 @@
 -- ====================================================
 CREATE DATABASE IF NOT EXISTS WEATHER_SOURCE_LLC_FROSTBYTE;
 USE WEATHER_SOURCE_LLC_FROSTBYTE;
+--doplniť schému
 
 -- ====================================================
 -- TABLE: POSTAL_CODES 
