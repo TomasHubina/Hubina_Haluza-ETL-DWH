@@ -89,7 +89,6 @@ CREATE TABLE FACT_WEATHER (
     CONSTRAINT fk_weather_type
         FOREIGN KEY (weather_type_id)
         REFERENCES DIM_WEATHER_TYPE(weather_type_id),
-
     CONSTRAINT fk_measurement_level
         FOREIGN KEY (measurement_level_id)
         REFERENCES DIM_MEASUREMENT_LEVEL(measurement_level_id)
