@@ -5,7 +5,7 @@ CREATE DATABASE IF NOT EXISTS WEATHER_SOURCE_LLC_FROSTBYTE;
 USE WEATHER_SOURCE_LLC_FROSTBYTE;
 
 -- ====================================================
--- TABLE: POSTAL_CODES (bez cudzích kľúčov - referenčná tabuľka)
+-- TABLE: POSTAL_CODES 
 -- ====================================================
 CREATE TABLE IF NOT EXISTS POSTAL_CODES (
     POSTAL_CODE VARCHAR(20),
