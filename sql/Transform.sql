@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE TABLE dim_location AS
 SELECT
     UUID_STRING()        AS location_id,
@@ -12,16 +11,23 @@ SELECT * from dim_location
 limit 5;
 
 
+
 CREATE OR REPLACE TABLE dim_date AS
 SELECT DISTINCT
-    TO_VARCHAR(DATE_VALID_STD, 'YYYYMMDD') AS date_id,
-    DATE_VALID_STD                         AS date,
-    YEAR(DATE_VALID_STD)                   AS year,
-    MONTH(DATE_VALID_STD)                  AS month,
-    DAY(DATE_VALID_STD)                    AS day,
-    DAYOFYEAR(DATE_VALID_STD)              AS day_of_year,
-    QUARTER(DATE_VALID_STD)                AS quarter
-FROM forecast_day_staging;
+    TO_VARCHAR(d, 'YYYYMMDD') AS date_id,
+    d                           AS date,
+    YEAR(d)                    AS year,
+    MONTH(d)                   AS month,
+    DAY(d)                     AS day,
+    DAYOFYEAR(d)               AS day_of_year,
+    QUARTER(d)                 AS quarter
+FROM (
+    SELECT DATE_VALID_STD AS d FROM forecast_day_staging
+    UNION
+    SELECT DATE_VALID_STD FROM history_day_staging
+    UNION
+    SELECT DATE_VALID_STD FROM forecast_history_day_staging
+);
 
 SELECT count(*) from dim_date;
 SELECT * from dim_date
@@ -33,7 +39,6 @@ SELECT DISTINCT
     TO_VARCHAR(TIME_VALID_UTC, 'HH24MI') AS time_id,
     EXTRACT(HOUR   FROM TIME_VALID_UTC)  AS hour,
     EXTRACT(MINUTE FROM TIME_VALID_UTC)  AS minute,
-    0                                    AS second,
     'UTC'                                AS time_type,
     0                                    AS is_dst,
     TIME_VALID_UTC                       AS time
@@ -76,13 +81,11 @@ SELECT count(*) from dim_data_type;
 CREATE OR REPLACE TABLE fact_weather AS
 SELECT
     UUID_STRING() AS fact_weather_id,
-
     dl.location_id,
     dd.date_id,
-    NULL AS time_id,
+    dt.time_id AS time_id,
     dwt.weather_type_id,
     ddt.data_type_id,
-
     s.AVG_TEMPERATURE_AIR_2M_F        AS temperature_air_f,
     s.AVG_TEMPERATURE_FEELSLIKE_2M_F  AS feels_like_temperature_f,
     s.TOT_PRECIPITATION_IN            AS precipitation_in,
@@ -95,34 +98,31 @@ SELECT
 
     AVG(s.AVG_TEMPERATURE_AIR_2M_F) OVER (
         PARTITION BY dl.location_id
-    ) AS avg_temperature_per_location,
+        ORDER BY dd.date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_avg_temperature,
 
-    ROW_NUMBER() OVER (
-        PARTITION BY dl.location_id, dd.date_id
-        ORDER BY dd.date_id
-    ) AS measurement_order
+   s.AVG_TEMPERATURE_AIR_2M_F - LAG(s.AVG_TEMPERATURE_AIR_2M_F) OVER (
+    PARTITION BY dl.location_id
+    ORDER BY dd.date
+) AS day_temperature_change
 
 FROM forecast_day_staging s
-
 LEFT JOIN dim_time dt
-  ON TO_VARCHAR(s.TIME_INIT_UTC, 'HH24MISS') = dt.time_id
-
+  ON TO_VARCHAR(s.TIME_INIT_UTC, 'HH24MI') = dt.time_id
 JOIN dim_location dl
   ON s.POSTAL_CODE = dl.postal_code
  AND s.COUNTRY = dl.country
-
 JOIN dim_date dd
-  ON s.DATE_VALID_STD = dd.DATE
-
+  ON s.DATE_VALID_STD = dd.date
 JOIN dim_weather_type dwt
   ON dwt.weather_type = 'forecast'
-
 JOIN dim_data_type ddt
   ON ddt.data_type = 'day';
 
 
 
 
-
 SELECT * FROM fact_weather
-limit 5;
+ORDER BY day_temperature_change asc
+limit 10;
