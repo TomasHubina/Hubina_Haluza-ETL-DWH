@@ -33,7 +33,7 @@ SELECT count(*) from dim_date;
 SELECT * from dim_date
 limit 5;
 
-
+/*
 CREATE OR REPLACE TABLE dim_time AS
 SELECT DISTINCT
     TO_VARCHAR(TIME_VALID_UTC, 'HH24MI') AS time_id,
@@ -74,9 +74,52 @@ FROM (
 );
 
 SELECT count(*) from dim_data_type;
+*/
 
+CREATE OR REPLACE TABLE dim_time AS
+SELECT DISTINCT
+    TO_VARCHAR(t.time_valid_utc, 'HH24MISS')      AS time_id,
+    EXTRACT(HOUR   FROM t.time_valid_utc)         AS hour,
+    EXTRACT(MINUTE FROM t.time_valid_utc)         AS minute,
+    EXTRACT(SECOND FROM t.time_valid_utc)         AS second,
 
+    CASE 
+        WHEN t.dst_offset_minutes <> 0 THEN 1
+        ELSE 0
+    END                                           AS is_dst,
 
+    t.time_valid_utc                               AS time_utc,
+    t.time_valid_lcl                               AS time_local,
+    t.dst_offset_minutes                           AS dst_offset_minutes
+
+FROM (
+    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM forecast_hour_staging
+    UNION
+    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM history_hour_staging
+    UNION
+    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM forecast_history_hour_staging
+) t
+WHERE t.time_valid_utc IS NOT NULL;
+
+CREATE OR REPLACE TABLE dim_data_type AS
+SELECT DISTINCT
+    UUID_STRING() AS data_type_id,
+    data_type
+FROM (
+    SELECT 'forecast' AS data_type
+    UNION ALL
+    SELECT 'measurement'
+);
+
+CREATE OR REPLACE TABLE dim_granularity AS
+SELECT DISTINCT
+    UUID_STRING() AS granularity_id,
+    granularity
+FROM (
+    SELECT 'day' AS granularity
+    UNION ALL
+    SELECT 'hour'
+);
 
 CREATE OR REPLACE TABLE fact_weather AS
 SELECT
