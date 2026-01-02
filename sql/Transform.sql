@@ -35,22 +35,14 @@ SELECT DISTINCT
     EXTRACT(HOUR   FROM t.time_valid_utc)         AS hour,
     EXTRACT(MINUTE FROM t.time_valid_utc)         AS minute,
     EXTRACT(SECOND FROM t.time_valid_utc)         AS second,
-
-    CASE 
-        WHEN t.dst_offset_minutes <> 0 THEN 1
-        ELSE 0
-    END                                           AS is_dst,
-
-    t.time_valid_utc                               AS time_utc,
-    t.time_valid_lcl                               AS time_local,
-    t.dst_offset_minutes                           AS dst_offset_minutes
+    t.time_valid_utc                              AS time_utc
 
 FROM (
-    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM forecast_hour_staging
+    SELECT time_valid_utc FROM forecast_hour_staging
     UNION
-    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM history_hour_staging
+    SELECT time_valid_utc FROM history_hour_staging
     UNION
-    SELECT time_valid_utc, time_valid_lcl, dst_offset_minutes FROM forecast_history_hour_staging
+    SELECT time_valid_utc FROM forecast_history_hour_staging
 ) t
 WHERE t.time_valid_utc IS NOT NULL;
 
@@ -179,7 +171,9 @@ JOIN dim_granularity dg
 
 
 CREATE OR REPLACE TABLE fact_weather_hour AS
-WITH base_hour_raw AS (
+WITH base_hour AS (
+
+    
     SELECT
         postal_code,
         country,
@@ -193,18 +187,19 @@ WITH base_hour_raw AS (
         humidity_relative_2m_pct    AS humidity_pct,
         pressure_mean_sea_level_mb AS pressure_mb,
         cloud_cover_pct,
-        radiation_solar_total_wpm2  AS solar_radiation_wpm2,
-        'forecast'                 AS data_type
+        radiation_solar_total_wpm2,
+        'forecast'                  AS data_type
     FROM forecast_hour_staging
-    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+    --WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 
     UNION ALL
 
+    
     SELECT
         postal_code,
         country,
         time_valid_utc,
-        time_init_utc,
+        NULL                         AS time_init_utc,
         temperature_air_2m_f,
         temperature_feelslike_2m_f,
         precipitation_in,
@@ -214,41 +209,11 @@ WITH base_hour_raw AS (
         pressure_mean_sea_level_mb,
         cloud_cover_pct,
         radiation_solar_total_wpm2,
-        'forecast'
-    FROM forecast_history_hour_staging
-    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-
-    UNION ALL
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        NULL AS time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'measurement'
+        'measurement'               AS data_type
     FROM history_hour_staging
-    WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-),
-base_hour AS (
-    SELECT *
-    FROM (
-        SELECT
-            *,
-            ROW_NUMBER() OVER (
-                PARTITION BY postal_code, country, time_valid_utc, data_type
-                ORDER BY time_init_utc DESC NULLS LAST
-            ) AS rn
-        FROM base_hour_raw
-    )
-    WHERE rn = 1
+    --WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+
+    -- doplniť UNION ALL pre forecast_history_hour_staging
 )
 
 SELECT
@@ -270,8 +235,9 @@ SELECT
     b.humidity_pct,
     b.pressure_mb,
     b.cloud_cover_pct,
-    b.solar_radiation_wpm2,
+    b.radiation_solar_total_wpm2,
 
+   
     b.temperature_air_f
       - LAG(b.temperature_air_f) OVER (
             PARTITION BY dl.location_id, ddt.data_type_id, dd.date_id
@@ -279,15 +245,19 @@ SELECT
         ) AS hour_temperature_change
 
 FROM base_hour b
+
 JOIN dim_location dl
   ON b.postal_code = dl.postal_code
  AND b.country     = dl.country
+
 JOIN dim_date dd
   ON CAST(b.time_valid_utc AS DATE) = dd.date
+
 JOIN dim_time dt
-  ON TO_VARCHAR(b.time_valid_utc, 'HH24MISS') = dt.time_id
+  ON dt.time_utc = b.time_valid_utc   
+
 JOIN dim_data_type ddt
   ON ddt.data_type = b.data_type
+
 JOIN dim_granularity dg
   ON dg.granularity = 'hour';
-
