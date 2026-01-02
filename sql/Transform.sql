@@ -180,9 +180,10 @@ JOIN dim_granularity dg
 
 CREATE OR REPLACE TABLE fact_weather_hour AS
 WITH base_hour AS (
+
+    
     SELECT
         postal_code,
-        city_name,
         country,
         time_valid_utc,
         time_init_utc,
@@ -193,18 +194,20 @@ WITH base_hour AS (
         wind_speed_10m_mph          AS wind_speed_mph,
         humidity_relative_2m_pct    AS humidity_pct,
         pressure_mean_sea_level_mb AS pressure_mb,
-        cloud_cover_pct             AS cloud_cover_pct,
-        radiation_solar_total_wpm2  AS solar_radiation_wpm2,
+        cloud_cover_pct,
+        radiation_solar_total_wpm2,
         'forecast'                  AS data_type
     FROM forecast_hour_staging
     WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+
     UNION ALL
+
+    
     SELECT
         postal_code,
-        city_name,
         country,
         time_valid_utc,
-        time_init_utc,
+        NULL                         AS time_init_utc,
         temperature_air_2m_f,
         temperature_feelslike_2m_f,
         precipitation_in,
@@ -214,26 +217,7 @@ WITH base_hour AS (
         pressure_mean_sea_level_mb,
         cloud_cover_pct,
         radiation_solar_total_wpm2,
-        'forecast' AS data_type
-    FROM forecast_history_hour_staging
-    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-    UNION ALL
-    SELECT
-        postal_code,
-        city_name,
-        country,
-        time_valid_utc,
-        NULL AS time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'measurement' AS data_type
+        'measurement'               AS data_type
     FROM history_hour_staging
     WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 )
@@ -247,10 +231,8 @@ SELECT
     ddt.data_type_id,
     dg.granularity_id,
 
-  
     b.time_init_utc,
 
-    
     b.temperature_air_f,
     b.feels_like_temperature_f,
     b.precipitation_in,
@@ -259,7 +241,7 @@ SELECT
     b.humidity_pct,
     b.pressure_mb,
     b.cloud_cover_pct,
-    b.solar_radiation_wpm2,
+    b.radiation_solar_total_wpm2,
 
    
     b.temperature_air_f
@@ -278,7 +260,7 @@ JOIN dim_date dd
   ON CAST(b.time_valid_utc AS DATE) = dd.date
 
 JOIN dim_time dt
-  ON TO_VARCHAR(b.time_valid_utc, 'HH24MISS') = dt.time_id
+  ON dt.time_utc = b.time_valid_utc   
 
 JOIN dim_data_type ddt
   ON ddt.data_type = b.data_type
