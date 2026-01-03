@@ -38,7 +38,7 @@ WHERE rn = 1;
 
 SELECT COUNT(*) FROM postal_codes_staging;
 
---Tabuľka predpovedí počasia na deň, filtrovaná z kapacitných obmedzení len na prvú predpoveď a lokality, ktoré sme si vyfiltrovali 
+--Tabuľka predpovedí počasia na aktuálny deň, filtrovaná z kapacitných obmedzení len na prvú predpoveď a lokality, ktoré sme si vyfiltrovali 
  CREATE OR REPLACE TABLE forecast_day_staging AS
 SELECT *
 FROM (
@@ -57,20 +57,22 @@ WHERE rn = 1;
 
 SELECT COUNT(*) FROM forecast_day_staging;
 
----Tabuľka záznamov historických predpovedí pre dni, filtrovaná podobne ako tabuľka vyššie
+---Tabuľka záznamov historických predpovedí pre dni, filtrovaná podobne ako tabuľka vyššie a podľa časového intervalu
 CREATE OR REPLACE TABLE forecast_history_day_staging AS
 SELECT *
-FROM (
-SELECT
-f.*,
-ROW_NUMBER() OVER (
-PARTITION BY f.city_name, f.country, f.date_valid_std
-ORDER BY f.time_init_utc
-) AS rn
-FROM WEATHER_SOURCE_LLC_FROSTBYTE.ONPOINT_ID.FORECAST_HISTORY_DAY f
-JOIN postal_codes_staging p
-ON f.postal_code = p.postal_code
-AND f.country = p.country
+    FROM (
+        SELECT
+        f.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY f.city_name, f.country, f.date_valid_std
+            ORDER BY f.time_init_utc
+        ) AS rn
+    FROM WEATHER_SOURCE_LLC_FROSTBYTE.ONPOINT_ID.FORECAST_HISTORY_DAY f
+    JOIN postal_codes_staging p
+        ON f.postal_code = p.postal_code
+        AND f.country = p.country
+    WHERE f.time_init_utc >= DATE '2025-10-01'
+    AND f.time_init_utc <  DATE '2026-01-01'
 )
 WHERE rn = 1;
 
@@ -88,6 +90,8 @@ FROM (
     JOIN postal_codes_staging p
     ON f.postal_code = p.postal_code
     AND f.country = p.country
+    WHERE f.date_valid_std >= DATE '2025-10-01'
+    AND f.date_valid_std <  DATE '2026-01-01'
 )
 WHERE rn = 1;
 
@@ -107,12 +111,14 @@ FROM (
     JOIN postal_codes_staging p
     ON h.postal_code = p.postal_code
     AND h.country = p.country
+    WHERE h.time_valid_utc >= DATE '2025-10-01'
+    AND h.time_valid_utc <  DATE '2026-01-01'
 )
 WHERE rn = 1;
 
 SELECT COUNT(*) FROM history_hour_staging;
 
---Tabuľka predpovedí počasia v priebehu hodín
+--Tabuľka predpovedí počasia v priebehu hodín v aktuálny deň
 CREATE OR REPLACE TABLE forecast_hour_staging AS
 SELECT *
 FROM (
@@ -145,7 +151,8 @@ FROM (
     JOIN postal_codes_staging p
       ON f.postal_code = p.postal_code
      AND f.country = p.country
-    WHERE f.time_init_utc >= DATEADD(day, -90, CURRENT_TIMESTAMP())
+    WHERE f.time_init_utc >= DATE '2025-10-01'
+    AND f.time_init_utc <  DATE '2026-01-01'
 )
 WHERE rn = 1;
 
