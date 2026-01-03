@@ -435,3 +435,23 @@ JOIN dim_data_type ddt
 
 JOIN dim_granularity dg
   ON dg.granularity = 'hour';
+
+-----LOGIKA TESTOV, S KTORÝMI SOM PRACOVAL PRI fact_weather_hour---------
+
+select count (*) from fact_weather_hour 
+--where time_init_utc like '%02:00:00%'
+;
+  select * from fact_weather_hour 
+  where date_id like '20251220' and time_id like '130000' and location_id like '0d52%' 
+  order by date_id
+  limit 10;
+
+  select * from fact_weather_hour where time_init_utc like '%12:00:00%' and time_init_utc not like '2025-12-31%' and time_init_utc not like '2025-10-01%' order by time_init_utc desc limit 10;
+
+  select * from dim_data_type;
+  select * from dim_granularity;
+  select * from dim_location;
+
+  select * from forecast_history_hour_staging where postal_code = '06000' and 
+  --time_init_utc like '2025-09-25%' and 
+  time_valid_utc like '2025-12-20%' order by hour_utc limit 30;
