@@ -31,18 +31,16 @@ FROM (
 --TOTO JE PLATNE
 CREATE OR REPLACE TABLE dim_time AS
 SELECT DISTINCT
-    TO_VARCHAR(t.time_valid_utc, 'HH24MISS')      AS time_id,
-    EXTRACT(HOUR   FROM t.time_valid_utc)         AS hour,
-    EXTRACT(MINUTE FROM t.time_valid_utc)         AS minute,
-    EXTRACT(SECOND FROM t.time_valid_utc)         AS second,
-    t.time_valid_utc                              AS time_utc
-
+    TO_VARCHAR(TIME(t.time_valid_utc), 'HH24MISS') AS time_id,
+    HOUR(t.time_valid_utc)    AS hour,
+    MINUTE(t.time_valid_utc)  AS minute,
+    SECOND(t.time_valid_utc)  AS second
 FROM (
-    SELECT time_valid_utc FROM forecast_hour_staging
+    SELECT DISTINCT time_valid_utc FROM forecast_hour_staging
     UNION
-    SELECT time_valid_utc FROM history_hour_staging
+    SELECT DISTINCT time_valid_utc FROM history_hour_staging
     UNION
-    SELECT time_valid_utc FROM forecast_history_hour_staging
+    SELECT DISTINCT time_valid_utc FROM forecast_history_hour_staging
 ) t
 WHERE t.time_valid_utc IS NOT NULL;
 
@@ -169,37 +167,20 @@ JOIN dim_granularity dg
   ON dg.granularity = 'day';
 
 
+SELECT * from fact_weather_day;
 
+
+
+
+  
+--TOTO JE PLATNE
 CREATE OR REPLACE TABLE fact_weather_hour AS
-WITH base_hour AS (
-
-    
+WITH all_source_data AS (
     SELECT
         postal_code,
         country,
         time_valid_utc,
         time_init_utc,
-        temperature_air_2m_f        AS temperature_air_f,
-        temperature_feelslike_2m_f  AS feels_like_temperature_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph          AS wind_speed_mph,
-        humidity_relative_2m_pct    AS humidity_pct,
-        pressure_mean_sea_level_mb AS pressure_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'forecast'                  AS data_type
-    FROM forecast_hour_staging
-    --WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-
-    UNION ALL
-
-    
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        NULL                         AS time_init_utc,
         temperature_air_2m_f,
         temperature_feelslike_2m_f,
         precipitation_in,
@@ -209,55 +190,128 @@ WITH base_hour AS (
         pressure_mean_sea_level_mb,
         cloud_cover_pct,
         radiation_solar_total_wpm2,
-        'measurement'               AS data_type
+        'forecast' AS data_type
+    FROM forecast_hour_staging
+    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+    
+    UNION ALL
+    
+    SELECT
+        postal_code,
+        country,
+        time_valid_utc,
+        time_init_utc,
+        temperature_air_2m_f,
+        temperature_feelslike_2m_f,
+        precipitation_in,
+        snowfall_in,
+        wind_speed_10m_mph,
+        humidity_relative_2m_pct,
+        pressure_mean_sea_level_mb,
+        cloud_cover_pct,
+        radiation_solar_total_wpm2,
+        'forecast' AS data_type
+    FROM forecast_history_hour_staging
+    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+    
+    UNION ALL
+    
+    SELECT
+        postal_code,
+        country,
+        time_valid_utc,
+        NULL AS time_init_utc,
+        temperature_air_2m_f,
+        temperature_feelslike_2m_f,
+        precipitation_in,
+        snowfall_in,
+        wind_speed_10m_mph,
+        humidity_relative_2m_pct,
+        pressure_mean_sea_level_mb,
+        cloud_cover_pct,
+        radiation_solar_total_wpm2,
+        'measurement' AS data_type
     FROM history_hour_staging
-    --WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-
-    -- doplniť UNION ALL pre forecast_history_hour_staging
+    WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
+),
+deduplicated_data AS (
+    SELECT
+        postal_code,
+        country,
+        time_valid_utc,
+        time_init_utc,
+        temperature_air_2m_f,
+        temperature_feelslike_2m_f,
+        precipitation_in,
+        snowfall_in,
+        wind_speed_10m_mph,
+        humidity_relative_2m_pct,
+        pressure_mean_sea_level_mb,
+        cloud_cover_pct,
+        radiation_solar_total_wpm2,
+        data_type,
+        ROW_NUMBER() OVER (
+            PARTITION BY postal_code, country, time_valid_utc, data_type
+            ORDER BY time_init_utc DESC NULLS LAST
+        ) AS rn
+    FROM all_source_data
+),
+joined_data AS (
+    SELECT
+        s.postal_code,
+        s.country,
+        s.time_valid_utc,
+        s.time_init_utc,
+        s.temperature_air_2m_f,
+        s.temperature_feelslike_2m_f,
+        s.precipitation_in,
+        s.snowfall_in,
+        s.wind_speed_10m_mph,
+        s.humidity_relative_2m_pct,
+        s.pressure_mean_sea_level_mb,
+        s.cloud_cover_pct,
+        s.radiation_solar_total_wpm2,
+        s.data_type,
+        dl.location_id,
+        dd.date_id,
+        dd.date,
+        dt.time_id,
+        ddt.data_type_id,
+        dg.granularity_id
+    FROM deduplicated_data s
+    JOIN dim_location dl
+      ON s.postal_code = dl.postal_code
+     AND s.country     = dl.country
+    JOIN dim_date dd
+      ON CAST(s.time_valid_utc AS DATE) = dd.date
+    JOIN dim_time dt
+      ON dt.time_id = TO_VARCHAR(TIME(s.time_valid_utc), 'HH24MISS')
+    JOIN dim_data_type ddt
+      ON ddt.data_type = s.data_type
+    JOIN dim_granularity dg
+      ON dg.granularity = 'hour'
+    WHERE s.rn = 1
 )
-
 SELECT
     UUID_STRING() AS fact_weather_hour_id,
-
-    dl.location_id,
-    dd.date_id,
-    dt.time_id,
-    ddt.data_type_id,
-    dg.granularity_id,
-
-    b.time_init_utc,
-
-    b.temperature_air_f,
-    b.feels_like_temperature_f,
-    b.precipitation_in,
-    b.snowfall_in,
-    b.wind_speed_mph,
-    b.humidity_pct,
-    b.pressure_mb,
-    b.cloud_cover_pct,
-    b.radiation_solar_total_wpm2,
-
-   
-    b.temperature_air_f
-      - LAG(b.temperature_air_f) OVER (
-            PARTITION BY dl.location_id, ddt.data_type_id, dd.date_id
-            ORDER BY b.time_valid_utc
+    location_id,
+    date_id,
+    time_id,
+    data_type_id,
+    granularity_id,
+    time_init_utc,
+    temperature_air_2m_f        AS temperature_air_f,
+    temperature_feelslike_2m_f  AS feels_like_temperature_f,
+    precipitation_in,
+    snowfall_in,
+    wind_speed_10m_mph          AS wind_speed_mph,
+    humidity_relative_2m_pct    AS humidity_pct,
+    pressure_mean_sea_level_mb  AS pressure_mb,
+    cloud_cover_pct,
+    radiation_solar_total_wpm2  AS solar_radiation_wpm2,
+    temperature_air_2m_f
+      - LAG(temperature_air_2m_f) OVER (
+            PARTITION BY location_id, data_type_id, date_id
+            ORDER BY time_valid_utc
         ) AS hour_temperature_change
-
-FROM base_hour b
-
-JOIN dim_location dl
-  ON b.postal_code = dl.postal_code
- AND b.country     = dl.country
-
-JOIN dim_date dd
-  ON CAST(b.time_valid_utc AS DATE) = dd.date
-
-JOIN dim_time dt
-  ON dt.time_utc = b.time_valid_utc   
-
-JOIN dim_data_type ddt
-  ON ddt.data_type = b.data_type
-
-JOIN dim_granularity dg
-  ON dg.granularity = 'hour';
+FROM joined_data;
