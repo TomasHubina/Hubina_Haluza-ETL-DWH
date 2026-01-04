@@ -44,10 +44,12 @@ Podrobný popis pre jednotlivé tabuľky nájdete v časti *sql->staging_tables.
 Po dokončení staging tabuliek sme začali riešiť tvorbu a návrh biznis logiky pre tabuľky star schémy - **transform**.
 
 **Primárne kľúče**
+
 Pre dim_date a dim_time používame ako kľúč zápis v podobe YYYYMMDD a HH24MISS - tie zároveň zobrazujú časový záznam ktorý značí kedy bolo meranie vykonané alebo na kedy má byť predpoveď platná (tzn. nie čas predpovede).
 Ostatné tabuľky používajú uuid ako svoj primárny kľúč.
 
 **Zdroj dát**
+
 Tabuľky využívajú 1 alebo viac staging tabuliek ako svoj zdroj. 
 
 - Dimenzie zaznamenávajúce čas používajú 2 tabuľky. Pre dim_date history_day_staging a forecast_history_day_staging, ale forecast_day_staging už nie, pretože táto zaznamenáva dáta práve pre aktuálny deň - keďže nahrávanie neprebieha živo, môže sa stať, že by sa stali dáta neaktuálnymi a spôsobili problémy. Rovnako náš biznis model uvažuje nad historickými dátami.
@@ -55,6 +57,7 @@ Tabuľky využívajú 1 alebo viac staging tabuliek ako svoj zdroj.
 - Tabuľky faktov používajú atribúty zo staging tabuliek na podobnom princípe ako vyššie spomenuté dimenzie. Navyše používajú niektoré dimenzie ako zdroj prepojenia pomocou cudzích kľúčov. fact_weather_hour obsahuje navyše aj dim_time, keďže potrebuje nie len dátum, ale aj čas v hodinách.
 
 **Window functions**
+
 Funkcie ako row_number() využívajú už staging tabuľky - pomocou nich sme filtrovali len prvý záznam (čisto len z kapacitných dôvodov).
 Neskôr používame aj lag() v tabuľkách faktov pre hodinové alebo denné zmeny.
 
