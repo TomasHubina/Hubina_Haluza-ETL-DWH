@@ -20,8 +20,6 @@ SELECT DISTINCT
     DAYOFYEAR(d)               AS day_of_year,
     QUARTER(d)                 AS quarter
 FROM (
-    --SELECT DATE_VALID_STD AS d FROM forecast_day_staging
-    --UNION
     SELECT DATE_VALID_STD AS d FROM history_day_staging
     UNION
     SELECT DATE_VALID_STD FROM forecast_history_day_staging
@@ -38,8 +36,6 @@ SELECT DISTINCT
     SECOND(t.time_valid_utc)  AS second,
     CASE WHEN HOUR(t.time_valid_utc) < 12 THEN 'am' ELSE 'pm' END AS am_pm
 FROM (
-    --SELECT DISTINCT time_valid_utc FROM forecast_hour_staging
-    --UNION
     SELECT DISTINCT time_valid_utc FROM history_hour_staging
     UNION
     SELECT DISTINCT time_valid_utc FROM forecast_history_hour_staging
@@ -103,23 +99,6 @@ SELECT
         ) AS day_temperature_change
 
 FROM (
-    /*SELECT
-        postal_code,
-        country,
-        date_valid_std,
-        time_init_utc,
-        avg_temperature_air_2m_f,
-        avg_temperature_feelslike_2m_f,
-        tot_precipitation_in,
-        tot_snowfall_in,
-        avg_wind_speed_10m_mph,
-        avg_humidity_relative_2m_pct,
-        avg_pressure_mean_sea_level_mb,
-        avg_cloud_cover_tot_pct,
-        avg_radiation_solar_total_wpm2,
-        'forecast' AS data_type
-    FROM forecast_day_staging
-    UNION ALL*/
     SELECT
         postal_code,
         country,
@@ -169,185 +148,12 @@ JOIN dim_granularity dg
   ON dg.granularity = 'day';
 
 
-SELECT * from fact_weather_day;
-
--- moje testy
-select * from fact_weather_day where data_type_id like '3a87%' limit 10;
-select * from fact_weather_day where data_type_id like '04%' order by time_init_utc limit 10;
+SELECT * from fact_weather_day
+limit 10;
 
 
-
-----------------------------------------------
--------SKÚS NAMIESTO TOHOTO MOJE SAMO---------
-----------------------------------------------
-CREATE OR REPLACE TABLE fact_weather_hour AS
-WITH all_source_data AS (
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'forecast' AS data_type
-    FROM forecast_hour_staging
-    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-    
-    UNION ALL
-    
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'forecast' AS data_type
-    FROM forecast_history_hour_staging
-    WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-    
-    UNION ALL
-    
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        NULL AS time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'measurement' AS data_type
-    FROM history_hour_staging
-    WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-),
-deduplicated_data AS (
-    SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        time_init_utc,
-        temperature_air_2m_f,
-        temperature_feelslike_2m_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph,
-        humidity_relative_2m_pct,
-        pressure_mean_sea_level_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        data_type,
-        ROW_NUMBER() OVER (
-            PARTITION BY postal_code, country, time_valid_utc, data_type
-            ORDER BY time_init_utc DESC NULLS LAST
-        ) AS rn
-    FROM all_source_data
-),
-joined_data AS (
-    SELECT
-        s.postal_code,
-        s.country,
-        s.time_valid_utc,
-        s.time_init_utc,
-        s.temperature_air_2m_f,
-        s.temperature_feelslike_2m_f,
-        s.precipitation_in,
-        s.snowfall_in,
-        s.wind_speed_10m_mph,
-        s.humidity_relative_2m_pct,
-        s.pressure_mean_sea_level_mb,
-        s.cloud_cover_pct,
-        s.radiation_solar_total_wpm2,
-        s.data_type,
-        dl.location_id,
-        dd.date_id,
-        dd.date,
-        dt.time_id,
-        ddt.data_type_id,
-        dg.granularity_id
-    FROM deduplicated_data s
-    JOIN dim_location dl
-      ON s.postal_code = dl.postal_code
-     AND s.country     = dl.country
-    JOIN dim_date dd
-      ON CAST(s.time_valid_utc AS DATE) = dd.date
-    JOIN dim_time dt
-      ON dt.time_id = TO_VARCHAR(TIME(s.time_valid_utc), 'HH24MISS')
-    JOIN dim_data_type ddt
-      ON ddt.data_type = s.data_type
-    JOIN dim_granularity dg
-      ON dg.granularity = 'hour'
-    WHERE s.rn = 1
-)
-SELECT
-    UUID_STRING() AS fact_weather_hour_id,
-    location_id,
-    date_id,
-    time_id,
-    data_type_id,
-    granularity_id,
-    time_init_utc,
-    temperature_air_2m_f        AS temperature_air_f,
-    temperature_feelslike_2m_f  AS feels_like_temperature_f,
-    precipitation_in,
-    snowfall_in,
-    wind_speed_10m_mph          AS wind_speed_mph,
-    humidity_relative_2m_pct    AS humidity_pct,
-    pressure_mean_sea_level_mb  AS pressure_mb,
-    cloud_cover_pct,
-    radiation_solar_total_wpm2  AS solar_radiation_wpm2,
-    temperature_air_2m_f
-      - LAG(temperature_air_2m_f) OVER (
-            PARTITION BY location_id, data_type_id, date_id
-            ORDER BY time_valid_utc
-        ) AS hour_temperature_change
-FROM joined_data;
-
--------MOŽNÉ RIEŠENIE---------
 CREATE OR REPLACE TABLE fact_weather_hour AS
 WITH base_hour AS (
-
-    
-    /*SELECT
-        postal_code,
-        country,
-        time_valid_utc,
-        time_init_utc,
-        temperature_air_2m_f        AS temperature_air_f,
-        temperature_feelslike_2m_f  AS feels_like_temperature_f,
-        precipitation_in,
-        snowfall_in,
-        wind_speed_10m_mph          AS wind_speed_mph,
-        humidity_relative_2m_pct    AS humidity_pct,
-        pressure_mean_sea_level_mb AS pressure_mb,
-        cloud_cover_pct,
-        radiation_solar_total_wpm2,
-        'forecast'                  AS data_type
-    FROM forecast_hour_staging
-    --WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-
-    UNION ALL*/
-
-    
     SELECT
         postal_code,
         country,
@@ -365,7 +171,6 @@ WITH base_hour AS (
         radiation_solar_total_wpm2,
         'measurement'               AS data_type
     FROM history_hour_staging
-    --WHERE time_valid_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 
    UNION ALL
     
@@ -386,7 +191,6 @@ WITH base_hour AS (
         radiation_solar_total_wpm2,
         'forecast' AS data_type
     FROM forecast_history_hour_staging
-    --WHERE time_init_utc >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 )
 
 SELECT
@@ -435,23 +239,3 @@ JOIN dim_data_type ddt
 
 JOIN dim_granularity dg
   ON dg.granularity = 'hour';
-
------LOGIKA TESTOV, S KTORÝMI SOM PRACOVAL PRI fact_weather_hour---------
-
-select count (*) from fact_weather_hour 
---where time_init_utc like '%02:00:00%'
-;
-  select * from fact_weather_hour 
-  where date_id like '20251220' and time_id like '130000' and location_id like '0d52%' 
-  order by date_id
-  limit 10;
-
-  select * from fact_weather_hour where time_init_utc like '%12:00:00%' and time_init_utc not like '2025-12-31%' and time_init_utc not like '2025-10-01%' order by time_init_utc desc limit 10;
-
-  select * from dim_data_type;
-  select * from dim_granularity;
-  select * from dim_location;
-
-  select * from forecast_history_hour_staging where postal_code = '06000' and 
-  --time_init_utc like '2025-09-25%' and 
-  time_valid_utc like '2025-12-20%' order by hour_utc limit 30;
