@@ -30,4 +30,32 @@ Diagram bol vytvorený pomocou dbdiagram.io. Dôvodom bolo lepšie vykreslenie v
 (Tu doplníme)
 
 ## 5. Vizualizácie
-(Tu doplníme)
+1. Index Produktivity Práce
+Hodnotí optimálne podmienky pre prácu vonku na základe teploty, vlhkosti a vetra.
+Metriky:
+
+Index produktivity (0-100)
+Priemerná teplota
+Priemerná vlhkosť
+
+Použitie: Stavebné firmy plánujú práce v hodinách s najvyšším indexom produktivity.
+
+2. Index Bezpečnosti Dopravy
+Vyhodnocuje bezpečnosť dopravných podmienok podľa dažďa, vetra, viditeľnosti a rizika ľadu.
+Metriky:
+
+Index bezpečnosti (0-100)
+Zrážky
+Rýchlosť vetra
+
+Použitie: Logistické firmy optimalizujú časy dodávok a trasy pre minimalizáciu rizík.
+
+3. Index Návštevnosti Obchodov
+Predpovedá návštevnosť na základe príjemnosti počasia.
+Metriky:
+
+Index návštevnosti (0-100)
+Teplota
+Percento príjemného počasia
+
+Použitie: Maloobchody a reštaurácie plánujú personál a zásoby podľa očakávanej návštevnosti.
