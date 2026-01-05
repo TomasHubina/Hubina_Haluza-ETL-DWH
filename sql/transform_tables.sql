@@ -1,5 +1,4 @@
---TOTO JE PLATNE
-
+--Dimenzia pre lokality
 CREATE OR REPLACE TABLE dim_location AS
 SELECT
     UUID_STRING()        AS location_id,
@@ -9,7 +8,7 @@ SELECT
 FROM postal_codes_staging;
 
 
---TOTO JE PLATNE
+--Dimenzia pre dátum
 CREATE OR REPLACE TABLE dim_date AS
 SELECT DISTINCT
     TO_VARCHAR(d, 'YYYYMMDD') AS date_id,
@@ -26,7 +25,7 @@ FROM (
 );
 
 
---TOTO JE PLATNE
+--Dimenzia pre čas
 CREATE OR REPLACE TABLE dim_time AS
 SELECT DISTINCT
     TO_VARCHAR(TIME(t.time_valid_utc), 'HH24MISS') AS time_id,
@@ -43,7 +42,7 @@ FROM (
 WHERE t.time_valid_utc IS NOT NULL;
 
 
---TOTO JE PLATNE
+--Dimenzia pre rozlíšenie predpovede/merania
 CREATE OR REPLACE TABLE dim_data_type AS
 SELECT DISTINCT
     UUID_STRING() AS data_type_id,
@@ -54,7 +53,7 @@ FROM (
     SELECT 'measurement'
 );
 
---TOTO JE PLATNE
+--Dimenzia pre rozlíšenie hodiny/dňa
 CREATE OR REPLACE TABLE dim_granularity AS
 SELECT DISTINCT
     UUID_STRING() AS granularity_id,
@@ -66,7 +65,7 @@ FROM (
 );
 
 
---TOTO JE PLATNE
+--Tabuľka faktov pre dni
 CREATE OR REPLACE TABLE fact_weather_day AS
 SELECT
     UUID_STRING() AS fact_weather_day_id,
@@ -151,7 +150,7 @@ JOIN dim_granularity dg
 SELECT * from fact_weather_day
 limit 10;
 
-
+--Tabuľka faktov pre hodiny
 CREATE OR REPLACE TABLE fact_weather_hour AS
 WITH base_hour AS (
     SELECT
