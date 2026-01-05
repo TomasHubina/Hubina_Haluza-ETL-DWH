@@ -114,3 +114,18 @@ Význam: Pomáha analyzovať denné vzorce počasia, napríklad pre plánovanie 
 Pozorovania:
 V teplých krajinách (Egypt, Austrália) je počas dňa stabilná teplota a nízka vlhkosť, ideálne pre vonkajšie aktivity a prácu.
 V chladnejších krajinách (Švédsko, Poľsko) je viac kolísania teploty počas dňa, čo môže ovplyvniť logistiku a návštevnosť obchodov.
+
+**4. Porovnanie predpovedí počasia oproti skutočnému meraniu**
+
+Vizualizácia zobrazuje súčastne predpovede počasia a skutočné merania počas obdobia 1.10.2025-31.12.2025 teda obdobím 4. kvartálu 2025. 
+Zároveň obsahuje aj kryvku samotnej odchýlky medzi meraním s predpoveďou.
+
+Pomocou grafu tak vieme posúdiť relatívnu presnosť predpovedí počasia.
+
+**5. Ovplyvnenie predpovedí teplôt zrážkami**
+
+Vizualizácia sa delí do 2 hlavných skupín dňami so zrážkami a dňami bez zrážok. Tieto skupiny sa ďalej delia podľa lokalít a jednotlivé stĺpce značia odchýlku teplôt v týchto lokalitách.
+Vizualizáciou vieme povedať, či zrážky majú vplyv na predpoveď teploty:
+- Zoberme si príklad, kde je tento rozdieľ najväčší - Egypt - 90 dní bez zrážok a 2 dni so zrážkami
+- Rozdiel medzi týmito 2 záznamami je približne dvojnásobný
+- Na základe toho by sme mohli subjektívne posúdiť, že zrážky skutočne môžu ovlyvniť teplotnú predpoveď.
