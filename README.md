@@ -92,20 +92,25 @@ Taliansko (94) a Austrália (94) sú tiež veľmi bezpečné, s minimom dažďa 
 
 Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa bezpečnostného indexu.
 
-3. Index Návštevnosti Obchodov
-Predpovedá návštevnosť na základe príjemnosti počasia.
-Metriky:
+3️⃣ Index Očakávanej Návštevnosti
 
-Index návštevnosti (0-100)
-Priemerná teplota (°F)
-Percento príjemného počasia
+Čo vidíme: Predpokladaná návštevnosť obchodov podľa klimatických podmienok: teplota, oblačnosť, dážď a extrémy.
 
-Kľúčové zistenia:
+Význam: Retail reťazce môžu plánovať expanziu, predpovedať tržby a optimalizovať marketing podľa krajiny.
 
-Najvyššia návštevnosť: 14:00 - 17:00 pri peknom počasí (index 90-100)
-Optimálna teplota pre nákupy: 70-75°F
-Dážď znižuje návštevnosť o 40-60%
-Extrémne teploty (< 40°F alebo > 90°F) znižujú návštevnosť o 30-50%
-Pri ideálnom počasí (65-80°F, bez dažďa) je index 100
+Pozorovania:
 
-Použitie: Reštaurácie a obchody optimalizujú personál podľa indexu, čo prináša úspory 25-30% v nákladoch na mzdy.
+Egypt (90) a Austrália (91) sú ideálne pre vysokú návštevnosť: teplé a slnečné dni s minimom dažďa.
+
+Francúzsko (78) a Taliansko (75) majú strednú návštevnosť – priaznivé počasie väčšinu času, ale viac oblačnosti a zrážok.
+
+Švédsko (63) a Poľsko (63) majú nižší index kvôli chladnejším a vlhkejším podmienkam.
+
+Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa očakávaného indexu návštevnosti.
+
+Kombinácia Krajina + Hodina
+Čo vidíme: Detailný pohľad na vybrané top krajiny s priemernými hodinovými hodnotami teploty a vlhkosti.
+Význam: Pomáha analyzovať denné vzorce počasia, napríklad pre plánovanie pracovných zmien, logistiku alebo retail prevádzku.
+Pozorovania:
+V teplých krajinách (Egypt, Austrália) je počas dňa stabilná teplota a nízka vlhkosť, ideálne pre vonkajšie aktivity a prácu.
+V chladnejších krajinách (Švédsko, Poľsko) je viac kolísania teploty počas dňa, čo môže ovplyvniť logistiku a návštevnosť obchodov.
