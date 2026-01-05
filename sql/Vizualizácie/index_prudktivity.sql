@@ -1,5 +1,6 @@
 WITH productivity_score AS (
     SELECT 
+        dl.country,
         dt.hour,
         f.temperature_air_f,
         f.humidity_pct,
@@ -25,15 +26,19 @@ WITH productivity_score AS (
         END AS wind_score
     FROM fact_weather_hour f
     JOIN dim_time dt ON f.time_id = dt.time_id
+    JOIN dim_location dl ON f.location_id = dl.location_id
     JOIN dim_data_type ddt ON f.data_type_id = ddt.data_type_id
     WHERE ddt.data_type = 'measurement'
 )
 SELECT 
-    LPAD(hour::VARCHAR, 2, '0') || ':00' AS hodina,
+    country AS krajina,
     ROUND(AVG((temp_score + humidity_score + wind_score) / 3.0), 0) AS produktivny_index,
     ROUND(AVG(temperature_air_f), 1) AS priemerna_teplota_f,
     ROUND(AVG(humidity_pct), 0) AS priemerna_vlhkost_pct,
-    COUNT(*) AS pocet_merani
+    ROUND(AVG(wind_speed_mph), 1) AS priemerna_rychlost_vetra_mph,
+    COUNT(*) AS pocet_merani,
+    COUNT(DISTINCT hour) AS pokrytie_hodin
 FROM productivity_score
-GROUP BY hour
-ORDER BY hour ASC;
+GROUP BY country
+HAVING COUNT(*) > 1000  -- Len krajiny s dostatočným počtom dát
+ORDER BY produktivny_index DESC;

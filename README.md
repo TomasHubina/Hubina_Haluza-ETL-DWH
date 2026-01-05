@@ -30,55 +30,60 @@ Diagram bol vytvorený pomocou dbdiagram.io. Dôvodom bolo lepšie vykreslenie v
 (Tu doplníme)
 
 ## 5. Vizualizácie
-1. Index Produktivity Práce
-Hodnotí optimálne podmienky pre prácu vonku na základe teploty, vlhkosti a vetra.
-Metriky:
+1️⃣ Index Produktivity Práce
 
-Index produktivity (0-100)
-Priemerná teplota (°F)
-Priemerná vlhkosť (%)
+Čo vidíme: Krajiny zoradené podľa priemerného produktívneho indexu, ktorý kombinuje teplotu, vlhkosť a rýchlosť vetra.
 
-Kľúčové zistenia:
+Význam: Firmy môžu identifikovať krajiny s najlepším prostredím pre prácu a optimalizovať lokalizáciu výroby alebo outsourcing.
 
-Najvyššia produktivita: 10:00 - 16:00 (index 85-95)
-Najnižšia produktivita: 06:00 - 08:00 (index 55-65)
-Optimálna teplota pre prácu: 60-75°F
-Optimálna vlhkosť: 30-60%
+Pozorovania:
 
-Použitie: Stavebné firmy plánujú náročné práce v hodinách s indexom nad 80, čo znižuje oneskorenia o 20-30%.
+Egypt (87) a Austrália (85) majú najlepšie podmienky pre prácu: teplé počasie, primeraná vlhkosť a mierny vietor.
 
-2. Index Bezpečnosti Dopravy
-Vyhodnocuje bezpečnosť dopravných podmienok podľa dažďa, vetra, viditeľnosti a rizika ľadu.
-Metriky:
+Švédsko (64) a Poľsko (67) majú nižší index kvôli chladnejšej teplote a vyššej vlhkosti.
 
-Index bezpečnosti (0-100)
-Zrážky (palce)
-Rýchlosť vetra (mph)
+Vizualizácia: Horizontálny bar chart, krajiny na osi X, index na osi Y, zoradené zostupne.
 
-Kľúčové zistenia:
+2️⃣ Index Bezpečnosti Dopravy
 
-Najbezpečnejšie hodiny: 11:00 - 15:00 (index 85-100)
-Rizikové hodiny: 05:00 - 08:00 počas zimy (index 40-60)
-Dážď > 0.05 palca znižuje index o 30 bodov
-Vietor > 25 mph znižuje index o 25 bodov
-Index < 50 koreluje s vyšším počtom dopravných nehôd
+Čo vidíme: Hodnotenie bezpečnosti dopravy podľa počasia: dážď, vietor, oblačnosť a riziko ľadu.
 
-Použitie: Logistické firmy optimalizujú trasy v bezpečných hodinách, znižujú poistné udalosti o 15-25% a šetria 15% nákladov na palivo.
+Význam: Logistické spoločnosti môžu optimalizovať medzinárodné trasy a vybrať krajiny s najbezpečnejšími podmienkami pre transport.
 
-3. Index Návštevnosti Obchodov
-Predpovedá návštevnosť na základe príjemnosti počasia.
-Metriky:
+Pozorovania:
 
-Index návštevnosti (0-100)
-Priemerná teplota (°F)
-Percento príjemného počasia
+Egypt (98) je najbezpečnejší, vďaka nízkym zrážkam a miernemu vetru.
 
-Kľúčové zistenia:
+Taliansko (94) a Austrália (94) sú tiež veľmi bezpečné, s minimom dažďa a priaznivou teplotou.
 
-Najvyššia návštevnosť: 14:00 - 17:00 pri peknom počasí (index 90-100)
-Optimálna teplota pre nákupy: 70-75°F
-Dážď znižuje návštevnosť o 40-60%
-Extrémne teploty (< 40°F alebo > 90°F) znižujú návštevnosť o 30-50%
-Pri ideálnom počasí (65-80°F, bez dažďa) je index 100
+Švédsko (88) a Poľsko (88) majú nižší index kvôli chladnejšiemu a vlhkejšiemu počasiu.
 
-Použitie: Reštaurácie a obchody optimalizujú personál podľa indexu, čo prináša úspory 25-30% v nákladoch na mzdy.
+Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa bezpečnostného indexu.
+
+3️⃣ Index Očakávanej Návštevnosti
+
+Čo vidíme: Predpokladaná návštevnosť obchodov podľa klimatických podmienok: teplota, oblačnosť, dážď a extrémy.
+
+Význam: Retail reťazce môžu plánovať expanziu, predpovedať tržby a optimalizovať marketing podľa krajiny.
+
+Pozorovania:
+
+Egypt (90) a Austrália (91) sú ideálne pre vysokú návštevnosť: teplé a slnečné dni s minimom dažďa.
+
+Francúzsko (78) a Taliansko (75) majú strednú návštevnosť – priaznivé počasie väčšinu času, ale viac oblačnosti a zrážok.
+
+Švédsko (63) a Poľsko (63) majú nižší index kvôli chladnejším a vlhkejším podmienkam.
+
+Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa očakávaného indexu návštevnosti.
+
+Kombinácia Krajina + Hodina
+
+Čo vidíme: Detailný pohľad na vybrané top krajiny s priemernými hodinovými hodnotami teploty a vlhkosti.
+
+Význam: Pomáha analyzovať denné vzorce počasia, napríklad pre plánovanie pracovných zmien, logistiku alebo retail prevádzku.
+
+Pozorovania:
+
+V teplých krajinách (Egypt, Austrália) je počas dňa stabilná teplota a nízka vlhkosť, ideálne pre vonkajšie aktivity a prácu.
+
+V chladnejších krajinách (Švédsko, Poľsko) je viac kolísania teploty počas dňa, čo môže ovplyvniť logistiku a návštevnosť obchodov.
