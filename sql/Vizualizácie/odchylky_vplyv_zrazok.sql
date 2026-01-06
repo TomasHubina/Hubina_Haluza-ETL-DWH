@@ -20,6 +20,7 @@ WITH paired AS (
     JOIN dim_data_type dt_m
       ON dt_m.data_type_id = m.data_type_id
      AND dt_m.data_type = 'measurement'
+    WHERE m.precipitation_in IS NOT NULL
 )
 
 SELECT
