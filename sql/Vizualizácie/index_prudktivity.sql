@@ -37,7 +37,6 @@ SELECT
     ROUND(AVG(temperature_air_f), 1) AS priemerna_teplota_f,
     ROUND(AVG(humidity_pct), 0) AS priemerna_vlhkost_pct,
     ROUND(AVG(wind_speed_mph), 1) AS priemerna_rychlost_vetra_mph,
-    COUNT(*) AS pocet_merani
 FROM productivity_score
 GROUP BY lokalita
 ORDER BY produktivny_index DESC;
