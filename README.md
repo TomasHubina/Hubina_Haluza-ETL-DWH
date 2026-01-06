@@ -66,6 +66,10 @@ Funkcie ako row_number() využívajú už staging tabuľky - pomocou nich sme fi
 Neskôr používame aj lag() v tabuľkách faktov pre hodinové alebo denné zmeny.
 
 ## 5. Vizualizácie
+
+*Počas analýzy prihliadajme a myslime na fakt, že Austrália má ročné obdobia naopak oproti zvyšku uvedených lokalít. Naďalej však platí, že patrí do Q4 2025.*
+
+
 **1. Index Produktivity Práce**
 
 Čo vidíme: Krajiny zoradené podľa priemerného produktívneho indexu, ktorý kombinuje teplotu, vlhkosť a rýchlosť vetra.
