@@ -1,4 +1,4 @@
-WITH productivity_conditions AS (
+WITH productivity_score AS (
     SELECT 
         dl.country,
         dl.city_name,
@@ -6,60 +6,38 @@ WITH productivity_conditions AS (
         f.temperature_air_f,
         f.humidity_pct,
         f.wind_speed_mph,
-
-       
-        CASE 
-            WHEN f.temperature_air_f < 40 OR f.temperature_air_f > 95 THEN 40
-            WHEN f.temperature_air_f < 50 OR f.temperature_air_f > 85 THEN 25
-            WHEN f.temperature_air_f < 60 OR f.temperature_air_f > 75 THEN 10
-            ELSE 0
-        END AS temp_penalty,
-
         
         CASE 
-            WHEN f.humidity_pct < 20 OR f.humidity_pct > 70 THEN 25
-            WHEN f.humidity_pct < 30 OR f.humidity_pct > 60 THEN 10
-            ELSE 0
-        END AS humidity_penalty,
-
+            WHEN f.temperature_air_f BETWEEN 60 AND 75 THEN 100
+            WHEN f.temperature_air_f BETWEEN 50 AND 85 THEN 75
+            WHEN f.temperature_air_f BETWEEN 40 AND 95 THEN 50
+            ELSE 25
+        END AS temp_score,
         
         CASE 
-            WHEN f.wind_speed_mph >= 20 THEN 25
-            WHEN f.wind_speed_mph >= 10 THEN 10
-            ELSE 0
-        END AS wind_penalty
-
+            WHEN f.humidity_pct BETWEEN 30 AND 60 THEN 100
+            WHEN f.humidity_pct BETWEEN 20 AND 70 THEN 75
+            ELSE 50
+        END AS humidity_score,
+        
+        CASE 
+            WHEN f.wind_speed_mph < 10 THEN 100
+            WHEN f.wind_speed_mph < 20 THEN 75
+            ELSE 50
+        END AS wind_score
     FROM fact_weather_hour f
     JOIN dim_time dt ON f.time_id = dt.time_id
     JOIN dim_location dl ON f.location_id = dl.location_id
     JOIN dim_data_type ddt ON f.data_type_id = ddt.data_type_id
     WHERE ddt.data_type = 'measurement'
 )
-
 SELECT 
-    CONCAT(country, ' - ', city_name) AS lokalita,
-
-    
-    GREATEST(
-        0,
-        ROUND(
-            100 - AVG(
-                temp_penalty +
-                humidity_penalty +
-                wind_penalty
-            ),
-            0
-        )
-    ) AS produktivny_index,
-
+    concat(country, ' - ', city_name) AS lokalita,
+    ROUND(AVG((temp_score + humidity_score + wind_score) / 3.0), 0) AS produktivny_index,
     ROUND(AVG(temperature_air_f), 1) AS priemerna_teplota_f,
     ROUND(AVG(humidity_pct), 0) AS priemerna_vlhkost_pct,
     ROUND(AVG(wind_speed_mph), 1) AS priemerna_rychlost_vetra_mph,
-
-    COUNT(*) AS pocet_merani,
-    COUNT(DISTINCT hour) AS pokrytie_hodin
-
-FROM productivity_conditions
-GROUP BY country, city_name
-HAVING COUNT(*) > 1000
+    COUNT(*) AS pocet_merani
+FROM productivity_score
+GROUP BY lokalita
 ORDER BY produktivny_index DESC;
