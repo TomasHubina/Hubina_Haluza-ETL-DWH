@@ -4,8 +4,11 @@
 - Samuel Haluza
 - Tomáš Hubina
 
-## 1. Úvod a popis dát
-(Tu doplníme neskôr)
+## 1. Úvod
+V tejto práci analyzujeme dáta o predpovediach počasia a samotnom počasí v niekoľkých lokalitách po celom svete za 4. kvartál roku 2025. Cieľom našej analýzy je:
+- porovnať predpovede počasia s finálnym meraním
+- zistiť, či môžu faktory, ako napríklad zrážky, ovplyvniť predpovedanú teplotu
+- zistiť, ako počasie ovplyvňovalo spoločnosť (bezpečnosť na castách, návštevnosť alebo index produktivity v našich lokalitách)
 
 ## 2. Zdrojové dáta (Snowflake Marketplace)
 Zdrojové dáta pochádzajú zo Snowflake Marketplace free datasetu WEATHER_SOURCE_LLC_FROSTBYTE. Dataset sa zameriava na predpovede počasia v meraných lokalitách po celom svete a rovnako tak na skutočne namerané hodnoty. 
@@ -19,22 +22,23 @@ Nakoľko tento projekt slúži ako záverečný projekt do školy a pôvodný da
 
 Surové dáta sú usporiadané v relačnom modeli, ktorý je znázornený na entitno-relačnom diagrame (ERD):
 
-(diagram)
+<img width="2811" height="2691" alt="ERD_raw" src="https://github.com/user-attachments/assets/e259e21e-be96-4c2d-8cf6-06a2e460e1ef" />
+
 
 Diagram bol vytvorený pomocou dbdiagram.io. Dôvodom bolo lepšie vykreslenie vzájomných "vzťahov" medzi tabuľkami - nakoľko neobsahuje PKs.
 
 ## 3. Dimenzionálny model
 V ukážke bola navrhnutá **schéma hviezdy** (star schema) podľa Kimballovej metodológie, ktorá obsahuje **2 tabuľky faktov fact_weather_day** a **fact_weather_hour**, ktoré sú prepojené s nasledujúcimi 5 dimenziami:
 
-- **dim_location**: obsahuje údaje o lokalite (krajine, meste a kóde)
-- **dim_data_type**: pomáha s rozdeľovaním medzi predpoveďou a meraním
-- **dim_granularity**: pomáha s rozdeľovaním medzi hodinou a dňom
-- **dim_date**: obsahuje záznamy o dátumoch, pre ktoré je meranie platné
-- **dim_time**: obsahuje záznamy o časoch 00:00:00-23:00:00
+- **dim_location**: obsahuje údaje o lokalite (krajine, meste a kóde) - SCD Typ 1
+- **dim_data_type**: pomáha s rozdeľovaním medzi predpoveďou a meraním - SCD Typ 0
+- **dim_granularity**: pomáha s rozdeľovaním medzi hodinou a dňom - SCD Typ 0
+- **dim_date**: obsahuje záznamy o dátumoch, pre ktoré je meranie platné - SCD Typ 0
+- **dim_time**: obsahuje záznamy o časoch 00:00:00-23:00:00 - SCD Typ 0
 
 Štruktúra hviezdicového modelu je znázornená na diagrame nižšie. Diagram ukazuje prepojenia medzi faktovou tabuľkou a dimenziami.
 
-(star schema)
+<img width="917" height="691" alt="star_scheme_weather" src="https://github.com/user-attachments/assets/d3c8077e-d689-43d5-9f78-2e2c9f933c6d" />
 
 ## 4. ELT proces
 Po pridaní databázy z Market Place sme začali pracovať na tvorbe staging tabuliek - tie ako už bolo spomenuté v časti *2. Zdrojové dáta* bolo potrebné pre veľké množstvo dát orezať o niektoré lokality a časové obdobia.
@@ -62,7 +66,7 @@ Funkcie ako row_number() využívajú už staging tabuľky - pomocou nich sme fi
 Neskôr používame aj lag() v tabuľkách faktov pre hodinové alebo denné zmeny.
 
 ## 5. Vizualizácie
-1️⃣ Index Produktivity Práce
+**1. Index Produktivity Práce**
 
 Čo vidíme: Krajiny zoradené podľa priemerného produktívneho indexu, ktorý kombinuje teplotu, vlhkosť a rýchlosť vetra.
 
@@ -76,7 +80,7 @@ Egypt (87) a Austrália (85) majú najlepšie podmienky pre prácu: teplé poča
 
 Vizualizácia: Horizontálny bar chart, krajiny na osi X, index na osi Y, zoradené zostupne.
 
-2️⃣ Index Bezpečnosti Dopravy
+**2. Index Bezpečnosti Dopravy**
 
 Čo vidíme: Hodnotenie bezpečnosti dopravy podľa počasia: dážď, vietor, oblačnosť a riziko ľadu.
 
@@ -92,7 +96,7 @@ Taliansko (94) a Austrália (94) sú tiež veľmi bezpečné, s minimom dažďa 
 
 Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa bezpečnostného indexu.
 
-3️⃣ Index Očakávanej Návštevnosti
+**3. Index Očakávanej Návštevnosti**
 
 Čo vidíme: Predpokladaná návštevnosť obchodov podľa klimatických podmienok: teplota, oblačnosť, dážď a extrémy.
 
@@ -129,3 +133,12 @@ Vizualizáciou vieme povedať, či zrážky majú vplyv na predpoveď teploty:
 - Zoberme si príklad, kde je tento rozdieľ najväčší - Egypt - 90 dní bez zrážok a 2 dni so zrážkami
 - Rozdiel medzi týmito 2 záznamami je približne dvojnásobný
 - Na základe toho by sme mohli subjektívne posúdiť, že zrážky skutočne môžu ovlyvniť teplotnú predpoveď.
+
+**6. Ovplyvnenie predpovedí teplôt zrážkami - celokvo**
+
+Vizualizácia funguje na podobnom princípe ako vyššie spomenutá. Rozdiel je v tom, že táto nám už nezobrazuje spomínané 2 hlavné skupiny (so zrážkami a bez zrážok) rozdelené ďalej na lokality, ale celkovo všetky lokality bez rozdielu.
+Získali sme tak ďalší bod k našej otázke, či na základe poskytnutých dát môžu zrážky ovplyvniť predpoveď teploty. A opäť vidíme, že pri zrážkach je tento rozdiel väčší.
+
+**7. Celkový bias predpovedí počasia**
+
+Na záver našej analýzy máme len jedno číslo - -0,69 - to nám ale vie veľa povedať. Číslo -0,69 nám totiž vyjadruje celkový bias našich predpovedí počasia. A na základe neho vieme povedať, že predpovede počasia sú v priemere o 0,69 Fahrenheita podhodnotené.
