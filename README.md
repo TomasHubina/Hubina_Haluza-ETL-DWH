@@ -80,6 +80,9 @@ Egypt (87) a Austrália (85) majú najlepšie podmienky pre prácu: teplé poča
 
 Vizualizácia: Horizontálny bar chart, krajiny na osi X, index na osi Y, zoradené zostupne.
 
+![produktivita](https://github.com/user-attachments/assets/8aa91f1c-a494-4867-b5ed-36be6876e9e9)
+
+
 **2. Index Bezpečnosti Dopravy**
 
 Čo vidíme: Hodnotenie bezpečnosti dopravy podľa počasia: dážď, vietor, oblačnosť a riziko ľadu.
@@ -95,6 +98,9 @@ Taliansko (94) a Austrália (94) sú tiež veľmi bezpečné, s minimom dažďa 
 Švédsko (88) a Poľsko (88) majú nižší index kvôli chladnejšiemu a vlhkejšiemu počasiu.
 
 Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa bezpečnostného indexu.
+
+![doprava](https://github.com/user-attachments/assets/544ab9c6-0e8d-4016-9c8f-5a20402e39ad)
+
 
 **3. Index Očakávanej Návštevnosti**
 
@@ -112,6 +118,9 @@ Francúzsko (78) a Taliansko (75) majú strednú návštevnosť – priaznivé p
 
 Vizualizácia: Horizontálny bar chart, krajiny zoradené podľa očakávaného indexu návštevnosti.
 
+![navstevnost](https://github.com/user-attachments/assets/cbde027e-d011-4675-ad20-4a9bd2f77acb)
+
+
 Kombinácia Krajina + Hodina
 Čo vidíme: Detailný pohľad na vybrané top krajiny s priemernými hodinovými hodnotami teploty a vlhkosti.
 Význam: Pomáha analyzovať denné vzorce počasia, napríklad pre plánovanie pracovných zmien, logistiku alebo retail prevádzku.
@@ -126,6 +135,9 @@ Zároveň obsahuje aj kryvku samotnej odchýlky medzi meraním s predpoveďou.
 
 Pomocou grafu tak vieme posúdiť relatívnu presnosť predpovedí počasia.
 
+![odchylky_teplota](https://github.com/user-attachments/assets/56ff62d9-e0b7-40cb-880e-0bd988295f7c)
+
+
 **5. Ovplyvnenie predpovedí teplôt zrážkami**
 
 Vizualizácia sa delí do 2 hlavných skupín dňami so zrážkami a dňami bez zrážok. Tieto skupiny sa ďalej delia podľa lokalít a jednotlivé stĺpce značia odchýlku teplôt v týchto lokalitách.
@@ -134,11 +146,19 @@ Vizualizáciou vieme povedať, či zrážky majú vplyv na predpoveď teploty:
 - Rozdiel medzi týmito 2 záznamami je približne dvojnásobný
 - Na základe toho by sme mohli subjektívne posúdiť, že zrážky skutočne môžu ovlyvniť teplotnú predpoveď.
 
+![odchylky_vplyv_zrazok](https://github.com/user-attachments/assets/d49ab6cc-2594-48ee-86d0-5005a0546769)
+
+
 **6. Ovplyvnenie predpovedí teplôt zrážkami - celokvo**
 
 Vizualizácia funguje na podobnom princípe ako vyššie spomenutá. Rozdiel je v tom, že táto nám už nezobrazuje spomínané 2 hlavné skupiny (so zrážkami a bez zrážok) rozdelené ďalej na lokality, ale celkovo všetky lokality bez rozdielu.
 Získali sme tak ďalší bod k našej otázke, či na základe poskytnutých dát môžu zrážky ovplyvniť predpoveď teploty. A opäť vidíme, že pri zrážkach je tento rozdiel väčší.
 
+![odchylky_vplyv_zrazok_celkovo](https://github.com/user-attachments/assets/efd65395-10bc-4708-89e0-4afb8ea95474)
+
+
 **7. Celkový bias predpovedí počasia**
 
 Na záver našej analýzy máme len jedno číslo - -0,69 - to nám ale vie veľa povedať. Číslo -0,69 nám totiž vyjadruje celkový bias našich predpovedí počasia. A na základe neho vieme povedať, že predpovede počasia sú v priemere o 0,69 Fahrenheita podhodnotené.
+
+![celkovy_bias_predpovedi](https://github.com/user-attachments/assets/3c43a1fe-14f4-4873-919f-bd1e404e22c3)
